@@ -21,6 +21,9 @@ function drawVertices(ctx, vertices) {
   ctx.fill();
 }
 
+const pi = Math.PI;
+const tau = 2 * pi;
+
 export class Kite {
   constructor(x, y) {
     this.x = x || 0;
@@ -34,7 +37,19 @@ export class Kite {
     ctx.scale(scale, scale);
 
     ctx.beginPath();
+    ctx.fillStyle = "lime";
     drawVertices(ctx, kiteVertices);
+
+    ctx.lineWidth = 5/scale;
+    ctx.beginPath();
+    ctx.strokeStyle="red";
+    ctx.arc(0, -1 + .5, 1-0.61803, .1*pi, .9*pi);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle="blue";
+    ctx.arc(0, 0 + .5, 0.61803, -.7*pi, -.3*pi);
+    ctx.stroke();
 
     ctx.restore();
   }
@@ -53,7 +68,19 @@ export class Dart {
     ctx.scale(scale, scale);
     
     ctx.beginPath();
+    ctx.fillStyle = "yellow";
     drawVertices(ctx, dartVertices);
+    
+    ctx.lineWidth = 5/scale;
+    ctx.beginPath();
+    ctx.strokeStyle="red";
+    ctx.arc(0, 0, (1-0.61803)*0.61803, .9*pi, 2.1*pi);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle="blue";
+    ctx.arc(0, -0.61803, 1-0.61803, .3*pi, .7*pi);
+    ctx.stroke();
 
     ctx.restore();
   }

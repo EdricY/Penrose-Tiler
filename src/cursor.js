@@ -17,21 +17,21 @@ export default function drawCursor(ctx) {
   if (chosenShape == Shapes.KITE) {
     k.x = cursor.x;
     k.y = cursor.y;
-    cursorCtx.fillStyle = "lime";
     k.draw(cursorCtx, theta, 50);
   } else {
     d.x = cursor.x;
     d.y = cursor.y;
-    cursorCtx.fillStyle = "blue";
     d.draw(cursorCtx, theta, 50);
   }
 
   ctx.drawImage(cursorCtx.canvas, 0, 0);
 }
 
+const canvasClientRatio = 1;
+canvas.addEventListener("mousemove", e => {
+  cursor.x = e.offsetX * canvasClientRatio;
+  cursor.y = e.offsetY * canvasClientRatio;
 
-window.addEventListener("mousemove", e => {
-  setCursorPosition(e.clientX, e.clientY);
 });
 
 window.addEventListener("mousewheel", e => {
@@ -39,15 +39,9 @@ window.addEventListener("mousewheel", e => {
 });
 
 window.addEventListener("keypress", e => {
-  if (e.key == "q"){
-    theta -= Math.PI / 5
-  } else if (e.key == "e"){
-    theta += Math.PI / 5
-  }
+  if      (e.key == "q") theta -= Math.PI / 5;
+  else if (e.key == "e") theta += Math.PI / 5;
+  else if (e.key == "1") chosenShape = Shapes.KITE;
+  else if (e.key == "2") chosenShape = Shapes.DART;
 });
 
-const canvasClientRatio = 1;
-function setCursorPosition(x, y) {
-  cursor.x = (x - canvas.offsetLeft) * canvasClientRatio;
-  cursor.y = (y - canvas.offsetTop) * canvasClientRatio;
-}

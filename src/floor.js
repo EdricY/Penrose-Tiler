@@ -14,3 +14,6 @@ export default function drawFloor(ctx) {
 window.addEventListener("mousedown", () => {
   drawCursor(tileCtx);
 });
+
+const clearBtn = document.getElementById("clear-btn");
+clearBtn.addEventListener("click", () => tileCtx.clearRect(0, 0, W, H))
