@@ -1,5 +1,5 @@
 import { Kite, Dart } from "./shapes.js";
-import drawCursor, { chosenShape, cursor } from "./cursor.js";
+import drawCursor, { chosenShape, cursor, theta } from "./cursor.js";
 import { W, H, Shapes, canvas } from "./globals";
 
 
@@ -12,7 +12,11 @@ export default function drawFloor(ctx) {
 }
 
 canvas.addEventListener("mousedown", () => {
-  drawCursor(tileCtx);
+  let shape;
+  if (chosenShape == Shapes.KITE) shape = new Kite(cursor.x, cursor.y);
+  else shape = new Dart(cursor.x, cursor.y);
+
+  shape.draw(tileCtx, theta, 1);
 });
 
 const clearBtn = document.getElementById("clear-btn");

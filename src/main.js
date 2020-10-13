@@ -1,8 +1,8 @@
-import { Kite, Dart } from "./shapes.js";
-import drawCursor from "./cursor.js";
+import drawCursor, { cursor } from "./cursor.js";
 import drawFloor from "./floor.js";
 
-import { W, H, canvas } from "./globals";
+import { W, H, canvas, tree, dist } from "./globals";
+
 
 const visCtx = canvas.getContext("2d");
 visCtx.canvas.width = W;
