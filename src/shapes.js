@@ -1,18 +1,5 @@
-
-const kiteVertices = [
-   0,        0       + 1,
-  -0.58779, -0.80902 + 1,
-   0,       -1       + 1,
-   0.58779, -0.80902 + 1,
-].map(x => x* 100)
-
-const dartVertices = [
-    0,        0      ,
-    -0.58779,  0.19098,
-    0,       -0.61803,
-    0.58779,  0.19098,
-].map(x => x* 100)
-
+import { dartVertices, kiteVertices, getVertices } from "./vertices";
+import { PHI, SIN36, COS36, Shapes, PI, TAU, degrees2Radians, posMod } from "./globals";
 
 function drawVertices(ctx, vertices) {
   ctx.moveTo(vertices[0], vertices[1]);
@@ -22,98 +9,100 @@ function drawVertices(ctx, vertices) {
   ctx.fill();
 }
 
-const pi = Math.PI;
-const tau = 2 * pi;
+const BLUE = true;
+const RED = false;
 
 export class Kite {
-  constructor(x, y) {
+  constructor(x, y, theta=0) {
     this.x = x || 0;
     this.y = y || 0;
+    this.verts = getVertices(theta, Shapes.KITE);
 
-    let bottom = new PointNode(x + kiteVertices[0], y + kiteVertices[1]);
-    let left   = new PointNode(x + kiteVertices[2], y + kiteVertices[3]);
-    let top    = new PointNode(x + kiteVertices[4], y + kiteVertices[5]);
-    let right  = new PointNode(x + kiteVertices[6], y + kiteVertices[7]);
-    bottom.left = left; bottom.right = right;
-    left.left = top; left.right = bottom;
-    top.left = right; top.right = left;
-    right.left = top; right.right = bottom;
+    this.theta = posMod(theta, 360);
+
+    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], 72, 234 + theta, true, BLUE);
+    let left   = new PointNode(x + this.verts[2], y + this.verts[3], 72, 342 + theta, false, RED);
+    let top    = new PointNode(x + this.verts[4], y + this.verts[5], 144, 18 + theta, true, RED);
+    let right  = new PointNode(x + this.verts[6], y + this.verts[7], 72, 126 + theta, false, BLUE);
+    bottom.next = left; bottom.prev = right;
+    left.next = top; left.prev = bottom;
+    top.next = right; top.prev = left;
+    right.next = bottom; right.prev = top;
 
     this.pts = [bottom, left, top, right];
-  }
-
-  draw(ctx, theta=0, scale=1) {
-    let {x, y} = this;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(theta);
-    ctx.scale(scale, scale);
-
-    ctx.beginPath();
-    ctx.fillStyle = "lime";
-    drawVertices(ctx, kiteVertices);
-
-    ctx.lineWidth = 5/scale;
-    ctx.beginPath();
-    ctx.strokeStyle="red";
-    ctx.arc(0, 0, (1-0.61803) * 100, .1*pi, .9*pi);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.strokeStyle="blue";
-    ctx.arc(0, 1 * 100, (0.61803) * 100, -.7*pi, -.3*pi);
-    ctx.stroke();
-
-    ctx.restore();
   }
 
   get alphas() {
     return [this.pts[0], this.pts[2]];
   }
+
   get betas() {
     return [this.pts[1], this.pts[3]];
   }
-}
 
-export class Dart {
-  constructor(x, y) {
-    this.x = x || 0;
-    this.y = y || 0;
-
-    let bottom = new PointNode(x + dartVertices[0], y + dartVertices[1]);
-    let left   = new PointNode(x + dartVertices[2], y + dartVertices[3]);
-    let top    = new PointNode(x + dartVertices[4], y + dartVertices[5]);
-    let right  = new PointNode(x + dartVertices[6], y + dartVertices[7]);
-    bottom.left = left; bottom.right = right;
-    left.left = top; left.right = bottom;
-    top.left = right; top.right = left;
-    right.left = top; right.right = bottom;
-
-    this.pts = [bottom, left, top, right];
+  getPointsCopy() {
+    return [...this.pts];
   }
-  draw(ctx, theta=0, scale=1) {
+
+  static translationForFit(alpha, blue) {
+    if (alpha && blue) return [0, -100];
+    if (alpha && !blue) return [0, 0];
+    if (!alpha && blue) return [SIN36 * 100, (COS36 - 1)*100];
+    if (!alpha && !blue) return [-SIN36 * 100, (COS36 - 1)*100];
+  }
+
+  static rotationForFit(alpha, blue) {
+    if (alpha && blue) return 54;
+    if (alpha && !blue) return 198;
+    if (!alpha && blue) return 306;
+    if (!alpha && !blue) return 162;
+  }
+
+  draw(ctx, scale=1) {
     let {x, y} = this;
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(theta);
+    ctx.rotate(degrees2Radians(this.theta));
     ctx.scale(scale, scale);
-    
+
     ctx.beginPath();
-    ctx.fillStyle = "yellow";
-    drawVertices(ctx, dartVertices);
-    
+    ctx.fillStyle = "lime";
+    drawVertices(ctx, kiteVertices[0]);
+
     ctx.lineWidth = 5/scale;
     ctx.beginPath();
     ctx.strokeStyle="red";
-    ctx.arc(0, 0, (1-0.61803)*0.61803 * 100, .9*pi, 2.1*pi);
+    ctx.arc(0, 0, (1-0.61803) * 100, .1*PI, .9*PI);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.strokeStyle="blue";
-    ctx.arc(0, -0.61803 * 100, (1-0.61803) * 100, .3*pi, .7*pi);
+    ctx.arc(0, 1 * 100, (0.61803) * 100, -.7*PI, -.3*PI);
     ctx.stroke();
 
     ctx.restore();
+  }
+}
+
+export class Dart {
+  constructor(x, y, theta=0) {
+    this.x = x || 0;
+    this.y = y || 0;
+    
+    this.theta = posMod(theta, 360);
+
+    this.verts = getVertices(theta, Shapes.DART);
+
+    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], 216, 162 + theta, false, RED);
+    let left   = new PointNode(x + this.verts[2], y + this.verts[3], 36, 306 + theta, true, BLUE);
+    let top    = new PointNode(x + this.verts[4], y + this.verts[5], 72, 54 + theta, false, BLUE);
+    let right  = new PointNode(x + this.verts[6], y + this.verts[7], 36, 198 + theta, true, RED);
+    bottom.next = left; bottom.prev = right;
+    left.next = top; left.prev = bottom;
+    top.next = right; top.prev = left;
+    right.next = bottom; right.prev = top;
+
+    this.pts = [bottom, left, top, right];
   }
 
   get alphas() {
@@ -123,13 +112,66 @@ export class Dart {
   get betas() {
     return [this.pts[0], this.pts[2]];
   }
+
+  getPointsCopy() {
+    return [...this.pts];
+  }
+
+  static translationForFit(alpha, blue) {
+    if (alpha && blue) return [-SIN36 * 100, (COS36-1) * 100];
+    if (alpha && !blue) return [SIN36 * 100, (COS36-1) * 100];
+    if (!alpha && blue) return [0, (PHI-1) * 100];
+    if (!alpha && !blue) return [0, 0];
+  }
+
+  static rotationForFit(alpha, blue) {
+    if (alpha && blue) return 126;
+    if (alpha && !blue) return 18;
+    if (!alpha && blue) return 234;
+    if (!alpha && !blue) return 342;
+  }
+
+  draw(ctx, scale=1) {
+    let {x, y} = this;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(degrees2Radians(this.theta));
+    ctx.scale(scale, scale);
+    
+    ctx.beginPath();
+    ctx.fillStyle = "yellow";
+    drawVertices(ctx, dartVertices[0]);
+    
+    ctx.lineWidth = 5/scale;
+    ctx.beginPath();
+    ctx.strokeStyle="red";
+    ctx.arc(0, 0, (1-0.61803)*0.61803 * 100, .9*PI, 2.1*PI);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle="blue";
+    ctx.arc(0, -0.61803 * 100, (1-0.61803) * 100, .3*PI, .7*PI);
+    ctx.stroke();
+
+    ctx.restore();
+  }
 }
 
 class PointNode {
-  constructor(x, y) {
+  constructor(x, y, innerAngle, theta, alpha, blue) {
     this.x = x;
     this.y = y;
-    this.left = null;
-    this.right = null;
+    
+    this.outerAngle = innerAngle
+
+    this.next = null;
+    this.prev = null;
+
+    this.theta = posMod(theta, 360);
+    this.blue = blue;
+
+    this.alpha = alpha;
   }
+  get beta() { return !this.alpha}
+  get red() { return !this.blue}
 }
