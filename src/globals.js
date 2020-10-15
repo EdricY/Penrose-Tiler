@@ -20,6 +20,12 @@ export function dist(a, b) {
   return dx*dx + dy*dy;
 }
 
+
+export function near(a, b) {
+  if (a == b) return true;
+  return dist(a, b) < 1;
+}
+
 export function midpoint(a, b) {
   const dx = a.x - b.x;
   const dy = a.y - b.y;

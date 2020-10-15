@@ -21,16 +21,6 @@ canvas.addEventListener("mousemove", e => {
   cursor.y = e.offsetY * canvasClientRatio;
 });
 
-canvas.addEventListener("mousedown", () => {
-  let pts = ghostShape.getPointsCopy();
-  
-  tree.insert(pts[0]);
-  tree.insert(pts[1]);
-  tree.insert(pts[2]);
-  tree.insert(pts[3]);
-});
-
-
 window.addEventListener("mousewheel", e => {
   chosenShape = 1 - chosenShape;
 });

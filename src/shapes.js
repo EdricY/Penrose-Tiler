@@ -24,10 +24,10 @@ export class Kite {
     let left   = new PointNode(x + this.verts[2], y + this.verts[3], 72, 342 + theta, false, RED);
     let top    = new PointNode(x + this.verts[4], y + this.verts[5], 144, 18 + theta, true, RED);
     let right  = new PointNode(x + this.verts[6], y + this.verts[7], 72, 126 + theta, false, BLUE);
-    bottom.next = left; bottom.prev = right;
-    left.next = top; left.prev = bottom;
-    top.next = right; top.prev = left;
-    right.next = bottom; right.prev = top;
+    bottom.shapeNext = left; bottom.next = left; bottom.prev = right;
+    left.shapeNext = top; left.next = top; left.prev = bottom;
+    top.shapeNext = right; top.next = right; top.prev = left;
+    right.shapeNext = bottom; right.next = bottom; right.prev = top;
 
     this.pts = [bottom, left, top, right];
   }
@@ -58,7 +58,7 @@ export class Kite {
     if (!alpha && !blue) return 162;
   }
 
-  draw(ctx, scale=1) {
+  draw(ctx, scale=1, stroke=false) {
     let {x, y} = this;
     ctx.save();
     ctx.translate(x, y);
@@ -68,6 +68,7 @@ export class Kite {
     ctx.beginPath();
     ctx.fillStyle = "lime";
     drawVertices(ctx, kiteVertices[0]);
+    if (stroke) ctx.stroke();
 
     ctx.lineWidth = 5/scale;
     ctx.beginPath();
@@ -97,10 +98,10 @@ export class Dart {
     let left   = new PointNode(x + this.verts[2], y + this.verts[3], 36, 306 + theta, true, BLUE);
     let top    = new PointNode(x + this.verts[4], y + this.verts[5], 72, 54 + theta, false, BLUE);
     let right  = new PointNode(x + this.verts[6], y + this.verts[7], 36, 198 + theta, true, RED);
-    bottom.next = left; bottom.prev = right;
-    left.next = top; left.prev = bottom;
-    top.next = right; top.prev = left;
-    right.next = bottom; right.prev = top;
+    bottom.shapeNext = left; bottom.next = left; bottom.prev = right;
+    left.shapeNext = top; left.next = top; left.prev = bottom;
+    top.shapeNext = right; top.next = right; top.prev = left;
+    right.shapeNext = bottom; right.next = bottom; right.prev = top;
 
     this.pts = [bottom, left, top, right];
   }
@@ -131,7 +132,7 @@ export class Dart {
     if (!alpha && !blue) return 342;
   }
 
-  draw(ctx, scale=1) {
+  draw(ctx, scale=1, stroke=false) {
     let {x, y} = this;
     ctx.save();
     ctx.translate(x, y);
@@ -141,7 +142,8 @@ export class Dart {
     ctx.beginPath();
     ctx.fillStyle = "yellow";
     drawVertices(ctx, dartVertices[0]);
-    
+    if (stroke) ctx.stroke();
+
     ctx.lineWidth = 5/scale;
     ctx.beginPath();
     ctx.strokeStyle="red";
@@ -162,7 +164,7 @@ class PointNode {
     this.x = x;
     this.y = y;
     
-    this.outerAngle = innerAngle
+    this.innerAngle = innerAngle;
 
     this.next = null;
     this.prev = null;
@@ -171,6 +173,7 @@ class PointNode {
     this.blue = blue;
 
     this.alpha = alpha;
+    this.shapeNext;
   }
   get beta() { return !this.alpha}
   get red() { return !this.blue}
