@@ -20,14 +20,14 @@ export class Kite {
 
     this.theta = posMod(theta, 360);
 
-    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], 72, 234 + theta, true, BLUE);
-    let left   = new PointNode(x + this.verts[2], y + this.verts[3], 72, 342 + theta, false, RED);
-    let top    = new PointNode(x + this.verts[4], y + this.verts[5], 144, 18 + theta, true, RED);
-    let right  = new PointNode(x + this.verts[6], y + this.verts[7], 72, 126 + theta, false, BLUE);
-    bottom.shapeNext = left; bottom.next = left; bottom.prev = right;
-    left.shapeNext = top; left.next = top; left.prev = bottom;
-    top.shapeNext = right; top.next = right; top.prev = left;
-    right.shapeNext = bottom; right.next = bottom; right.prev = top;
+    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], this, 72, 234 + theta, true, BLUE);
+    let left   = new PointNode(x + this.verts[2], y + this.verts[3], this, 72, 342 + theta, false, RED);
+    let top    = new PointNode(x + this.verts[4], y + this.verts[5], this, 144, 18 + theta, true, RED);
+    let right  = new PointNode(x + this.verts[6], y + this.verts[7], this, 72, 126 + theta, false, BLUE);
+    bottom.next = left; bottom.prev = right;
+    left.next = top; left.prev = bottom;
+    top.next = right; top.prev = left;
+    right.next = bottom; right.prev = top;
 
     this.pts = [bottom, left, top, right];
   }
@@ -94,14 +94,14 @@ export class Dart {
 
     this.verts = getVertices(theta, Shapes.DART);
 
-    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], 216, 162 + theta, false, RED);
-    let left   = new PointNode(x + this.verts[2], y + this.verts[3], 36, 306 + theta, true, BLUE);
-    let top    = new PointNode(x + this.verts[4], y + this.verts[5], 72, 54 + theta, false, BLUE);
-    let right  = new PointNode(x + this.verts[6], y + this.verts[7], 36, 198 + theta, true, RED);
-    bottom.shapeNext = left; bottom.next = left; bottom.prev = right;
-    left.shapeNext = top; left.next = top; left.prev = bottom;
-    top.shapeNext = right; top.next = right; top.prev = left;
-    right.shapeNext = bottom; right.next = bottom; right.prev = top;
+    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], this, 216, 162 + theta, false, RED);
+    let left   = new PointNode(x + this.verts[2], y + this.verts[3], this, 36, 306 + theta, true, BLUE);
+    let top    = new PointNode(x + this.verts[4], y + this.verts[5], this, 72, 54 + theta, false, BLUE);
+    let right  = new PointNode(x + this.verts[6], y + this.verts[7], this, 36, 198 + theta, true, RED);
+    bottom.next = left; bottom.prev = right;
+    left.next = top; left.prev = bottom;
+    top.next = right; top.prev = left;
+    right.next = bottom; right.prev = top;
 
     this.pts = [bottom, left, top, right];
   }
@@ -159,10 +159,14 @@ export class Dart {
   }
 }
 
+// TODO: HALFEDGE!
+// https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-6.3-Documentation/a00010.html
+// (probably need prev halfedge)
 class PointNode {
-  constructor(x, y, innerAngle, theta, alpha, blue) {
+  constructor(x, y, shape, innerAngle, theta, alpha, blue) {
     this.x = x;
     this.y = y;
+    this.shapes = [shape];
     
     this.innerAngle = innerAngle;
 

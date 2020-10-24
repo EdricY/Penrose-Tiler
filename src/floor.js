@@ -14,10 +14,9 @@ export default function drawFloor(ctx) {
   ctx.drawImage(tileCtx.canvas, 0, 0);
 }
 
-
-canvas.addEventListener("mousedown", () => {
-  ghostShape.draw(tileCtx)
-});
+export function addToFloor(shape) {
+  shape.draw(tileCtx)
+}
 
 const clearBtn = document.getElementById("clear-btn");
 clearBtn.addEventListener("click", () => tileCtx.clearRect(0, 0, W, H))
