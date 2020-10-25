@@ -53,5 +53,6 @@ export function posMod(x, n) {
 
 
 export let tree = new kdTree([], dist, ["x", "y"]);
+// halfedges with null face
 
 window.tree = tree;

@@ -1,5 +1,6 @@
 import { dartVertices, kiteVertices, getVertices } from "./vertices";
-import { PHI, SIN36, COS36, Shapes, PI, TAU, degrees2Radians, posMod } from "./globals";
+import { PHI, SIN36, COS36, Shapes, PI, TAU, degrees2Radians, posMod, tree, near } from "./globals";
+import { Halfedge, Point } from "./halfedge";
 
 function drawVertices(ctx, vertices) {
   ctx.moveTo(vertices[0], vertices[1]);
@@ -11,58 +12,113 @@ function drawVertices(ctx, vertices) {
 
 const BLUE = true;
 const RED = false;
+const ALPHA = true;
+const BETA = false;
+
+
+function alphaAndBlueMatch(a, b) {
+  return a.alpha == b.alpha && a.blue == b.blue;
+}
+
 
 export class Kite {
-  constructor(x, y, theta=0) {
-    this.x = x || 0;
-    this.y = y || 0;
-    this.verts = getVertices(theta, Shapes.KITE);
+  // constructor(x, y, theta=0) {
+  constructor(halfedge) {
+    this.halfedge = halfedge;
+    if (halfedge.face != null) console.log("it has a face!")
+    halfedge.face = this;
 
-    this.theta = posMod(theta, 360);
+    let [x, y, theta] = Kite.orientationForFit(halfedge);
+    this.x = x;
+    this.y = y;
+    this.theta = theta;
 
-    let bottom = new PointNode(x + this.verts[0], y + this.verts[1], this, 72, 234 + theta, true, BLUE);
-    let left   = new PointNode(x + this.verts[2], y + this.verts[3], this, 72, 342 + theta, false, RED);
-    let top    = new PointNode(x + this.verts[4], y + this.verts[5], this, 144, 18 + theta, true, RED);
-    let right  = new PointNode(x + this.verts[6], y + this.verts[7], this, 72, 126 + theta, false, BLUE);
-    bottom.next = left; bottom.prev = right;
-    left.next = top; left.prev = bottom;
-    top.next = right; top.prev = left;
-    right.next = bottom; right.prev = top;
+    this.verts = getVertices(this.theta, Shapes.KITE);
 
-    this.pts = [bottom, left, top, right];
-  }
+    let bottom = new Point(x + this.verts[0], y + this.verts[1], 72);
+    let left   = new Point(x + this.verts[2], y + this.verts[3], 72);
+    let top    = new Point(x + this.verts[4], y + this.verts[5], 144);
+    let right  = new Point(x + this.verts[6], y + this.verts[7], 72);
 
-  get alphas() {
-    return [this.pts[0], this.pts[2]];
-  }
+    // TODO: link with existing points? - I'm not sure if this is necessary
+    bottom.halfedge = new Halfedge(this, bottom,  left, ALPHA, BLUE, theta - 36);
+    left.halfedge   = new Halfedge(this, left,     top,  BETA,  RED, theta + 72);
+    top.halfedge    = new Halfedge(this, top,    right, ALPHA,  RED, theta + 108);
+    right.halfedge  = new Halfedge(this, right, bottom,  BETA, BLUE, theta - 144);
 
-  get betas() {
-    return [this.pts[1], this.pts[3]];
-  }
+    for (let pt of [bottom, left, top, right]) {
+      if (alphaAndBlueMatch(pt.halfedge, halfedge)) {
+        pt.halfedge = halfedge;
+        // console.log("connected: ", pt)
+        continue;
+      }
+      let [existingHe] = tree.nearest(pt, 1)[0];
+      if (pt.halfedge.matches(existingHe)) {
+        console.log("matched: ", existingHe)
+        pt.halfedge = existingHe;
+      }
+    }
 
-  getPointsCopy() {
-    return [...this.pts];
-  }
+    //set next & prev
+    bottom.halfedge.chain(left.halfedge);
+    left.halfedge.chain(top.halfedge);
+    top.halfedge.chain(right.halfedge);
+    right.halfedge.chain(bottom.halfedge);
 
-  static translationForFit(alpha, blue) {
-    if (alpha && blue) return [0, -100];
-    if (alpha && !blue) return [0, 0];
-    if (!alpha && blue) return [SIN36 * 100, (COS36 - 1)*100];
-    if (!alpha && !blue) return [-SIN36 * 100, (COS36 - 1)*100];
-  }
-
-  static rotationForFit(alpha, blue) {
-    if (alpha && blue) return 54;
-    if (alpha && !blue) return 198;
-    if (!alpha && blue) return 306;
-    if (!alpha && !blue) return 162;
+    //set opps TODO: if existing, use that
+    if (!bottom.halfedge.opp) bottom.halfedge.pair(new Halfedge(null,  left, bottom,  BETA, BLUE, theta -  36 + 180));
+    if (!left.halfedge.opp)   left.halfedge.pair(new Halfedge(null,     top,   left, ALPHA,  RED, theta +  72 + 180));
+    if (!top.halfedge.opp)    top.halfedge.pair(new Halfedge(null,    right,    top,  BETA,  RED, theta + 108 + 180));
+    if (!right.halfedge.opp)  right.halfedge.pair(new Halfedge(null, bottom,  right, ALPHA, BLUE, theta - 144 + 180));
   }
 
   draw(ctx, scale=1, stroke=false) {
-    let {x, y} = this;
+    let {x, y, theta} = this;
+    Kite.drawKite(ctx, x, y, theta, scale, stroke)
+  }
+
+  static isBottom(halfedge) { return halfedge.alpha && halfedge.blue }
+  static isLeft(halfedge) { return !halfedge.alpha && !halfedge.blue }
+  static isTop(halfedge) { return halfedge.alpha && !halfedge.blue }
+  static isRight(halfedge) { return !halfedge.alpha && halfedge.blue }
+
+  static translationForFit(halfedge) {
+    if (Kite.isBottom(halfedge)) return [SIN36 * 100, (COS36 - 1)*100];
+    if (Kite.isLeft(halfedge))   return [0, 0];
+    if (Kite.isTop(halfedge))    return [-SIN36 * 100, (COS36 - 1)*100];
+    if (Kite.isRight(halfedge))  return [0, -100];
+  }
+
+  static rotationForFit(halfedge) {
+    if (Kite.isBottom(halfedge)) return 36;
+    if (Kite.isLeft(halfedge))   return -72;
+    if (Kite.isTop(halfedge))    return -108;
+    if (Kite.isRight(halfedge))  return 144;
+  }
+
+  static orientationForFit(halfedge) {
+    let turn = Kite.rotationForFit(halfedge);
+    let theta = halfedge.theta + turn;
+    theta = posMod(theta, 360); // 0 is straight up, 90 points right
+
+    let c = Math.cos(degrees2Radians(theta));
+    let s = Math.sin(degrees2Radians(theta));
+    let t = Kite.translationForFit(halfedge);
+    let x = t[0] * c - t[1] * s + halfedge.nextPt.x;
+    let y = t[0] * s + t[1] * c + halfedge.nextPt.y;
+
+    return [x, y, theta];
+  }
+
+  static drawPreview(ctx, halfedge, scale=1, stroke=false) {
+    let [x, y, theta] = Kite.orientationForFit(halfedge);
+    Kite.drawKite(ctx, x, y, theta, scale, stroke);
+  }
+
+  static drawKite(ctx, x, y, theta, scale=1, stroke=false) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(degrees2Radians(this.theta));
+    ctx.rotate(degrees2Radians(theta));
     ctx.scale(scale, scale);
 
     ctx.beginPath();
@@ -162,23 +218,23 @@ export class Dart {
 // TODO: HALFEDGE!
 // https://www.graphics.rwth-aachen.de/media/openmesh_static/Documentations/OpenMesh-6.3-Documentation/a00010.html
 // (probably need prev halfedge)
-class PointNode {
-  constructor(x, y, shape, innerAngle, theta, alpha, blue) {
-    this.x = x;
-    this.y = y;
-    this.shapes = [shape];
+// class PointNode {
+//   constructor(x, y, shape, innerAngle, theta, alpha, blue) {
+//     this.x = x;
+//     this.y = y;
+//     this.shapes = [shape];
     
-    this.innerAngle = innerAngle;
+//     this.innerAngle = innerAngle;
 
-    this.next = null;
-    this.prev = null;
+//     this.next = null;
+//     this.prev = null;
 
-    this.theta = posMod(theta, 360);
-    this.blue = blue;
+//     this.theta = posMod(theta, 360);
+//     this.blue = blue;
 
-    this.alpha = alpha;
-    this.shapeNext;
-  }
-  get beta() { return !this.alpha}
-  get red() { return !this.blue}
-}
+//     this.alpha = alpha;
+//     this.shapeNext;
+//   }
+//   get beta() { return !this.alpha}
+//   get red() { return !this.blue}
+// }
