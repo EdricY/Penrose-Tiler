@@ -1,4 +1,4 @@
-import { near, posMod, TAU } from "./globals";
+import { near, posMod, TAU, lerp } from "./globals";
 
 export class Halfedge {
   constructor(face, fromPt, nextPt, alpha, blue, theta) {
@@ -15,8 +15,8 @@ export class Halfedge {
     // this.prev = prev;
     // this.opp = opp;
 
-    this.x = fromPt.x; //TODO: use midpoint
-    this.y = fromPt.y;
+    this.x = lerp(fromPt.x, nextPt.x, .5);
+    this.y = lerp(fromPt.y, nextPt.y, .5);
   }
 
   chain(next) {
@@ -56,10 +56,4 @@ export class Point {
     ctx.arc(this.x, this.y, r, 0, TAU);
     ctx.fill();
   }
-
-  // static midpoint(p1, p2, frac=.5) {
-  //   let x = lerp(p1.x, p2.x, frac);
-  //   let y = lerp(p1.y, p2.y, frac);
-  //   return new Point(x, y);
-  // }
 }

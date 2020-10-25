@@ -26,13 +26,8 @@ export function near(a, b) {
   return dist(a, b) < 1;
 }
 
-export function midpoint(a, b) {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return { 
-    x: b.x + dx/2,
-    y: b.y + dy/2
-  }
+export function lerp(a, b, frac) {
+  return (a * frac) + (b * (1-frac))
 }
 
 export function radians2Degrees(rad)

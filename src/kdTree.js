@@ -54,7 +54,7 @@ function kdTree(points, metric, dimensions) {
     return node;
   }
 
-  // Reloads a serialied tree
+  // Reloads a serialized tree
   function loadTree (data) {
     // Just need to restore the `parent` parameter
     self.root = data;
@@ -121,6 +121,9 @@ function kdTree(points, metric, dimensions) {
       insertPosition.right = newNode;
     }
   };
+
+  this.empty = function() { return this.root == null }
+  this.isSizeOne = function() { return this.root.left == null && this.root.right == null }
 
   this.remove = function (point) {
     var node;

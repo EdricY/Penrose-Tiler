@@ -47,11 +47,13 @@ export class Kite {
 
     for (let pt of [bottom, left, top, right]) {
       if (alphaAndBlueMatch(pt.halfedge, halfedge)) {
-        pt.halfedge = halfedge;
+        pt.halfedge = halfedge; //use the halfedge from argument
         continue;
       }
-      let [existingHe] = tree.nearest(pt, 1)[0];
+      let [existingHe] = tree.nearest(pt.halfedge, 1)[0];
       if (pt.halfedge.matches(existingHe)) {
+        existingHe.face = this;
+        tree.remove(existingHe)
         pt.halfedge = existingHe;
       }
     }
@@ -161,11 +163,13 @@ export class Dart {
 
     for (let pt of [bottom, left, top, right]) {
       if (alphaAndBlueMatch(pt.halfedge, halfedge)) {
-        pt.halfedge = halfedge;
+        pt.halfedge = halfedge; //use the halfedge from argument
         continue;
       }
-      let [existingHe] = tree.nearest(pt, 1)[0];
+      let [existingHe] = tree.nearest(pt.halfedge, 1)[0];
       if (pt.halfedge.matches(existingHe)) {
+        existingHe.face = this;
+        tree.remove(existingHe)
         pt.halfedge = existingHe;
       }
     }

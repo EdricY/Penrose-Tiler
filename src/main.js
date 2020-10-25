@@ -1,7 +1,7 @@
 import drawCursor, { chosenShape, cursor } from "./cursor.js";
-import drawFloor, { addToFloor } from "./floor.js";
+import { drawFloor, addToFloor, removeFromFloor, floorShapes } from "./floor.js";
 
-import { W, H, canvas, tree, dist, midpoint, degrees2Radians, PI, posMod, Shapes, near } from "./globals";
+import { W, H, canvas, tree, dist, degrees2Radians, PI, posMod, Shapes, near } from "./globals";
 import { Halfedge, Point } from "./halfedge.js";
 import { Dart, Kite } from "./shapes.js";
 
@@ -9,11 +9,6 @@ import { Dart, Kite } from "./shapes.js";
 const visCtx = canvas.getContext("2d");
 visCtx.canvas.width = W;
 visCtx.canvas.width = H;
-
-export let firstHalfedge = new Halfedge(null, new Point(300, 400), new Point(300, 300), true, true, 0);
-tree.insert(firstHalfedge);
-
-// addToFloor(new Kite(firstHalfedge));
 
 requestAnimationFrame(tick);
 
@@ -52,13 +47,16 @@ function tick() {
 
   if (close1) {
     let shapeClass = chosenShape == Shapes.KITE ? Kite : Dart;
+    visCtx.globalAlpha = .5;
     shapeClass.drawPreview(visCtx, close1);
-  }
-  visCtx.fillText(close1.x + " " + close1.y, 20, 20)
-  visCtx.fillText(close1.alpha + " " + close1.blue, 20, 40)
-  visCtx.fillText(close1.theta, 20, 60)
+    visCtx.globalAlpha = 1;
 
-  drawCircle(close1, "blue");
+    visCtx.fillText(close1.x + " " + close1.y, 20, 20)
+    visCtx.fillText(close1.alpha + " " + close1.blue, 20, 40)
+    visCtx.fillText(close1.theta, 20, 60)
+    drawCircle(close1, "blue");
+  }
+
 
 
   requestAnimationFrame(tick);
@@ -72,11 +70,15 @@ let close1 = null;
 function update() {
   let he = closest();
   close1 = he;
-  
+  if (tree.empty()) tree.insert(new Halfedge(null, new Point(300, 400), new Point(300, 300), true, true, 0));
 }
 
 function closest() {
-  let res = tree.nearest(cursor, 1);
+  if (tree.empty()) return null;
+  // let maxDistSq = null
+  let maxDistSq = tree.isSizeOne() ? null : 100*100
+  let res = tree.nearest(cursor, 1, maxDistSq);
+  if (res.length == 0) return null;
   let [he] = res[0];
   return he;
 }
@@ -96,6 +98,7 @@ canvas.addEventListener("contextmenu", e => {
 });
 
 function handlePlace() {
+  if (!close1) return;
   let start = close1;
   let shapeClass = chosenShape == Shapes.KITE ? Kite : Dart;
   let newShape = new shapeClass(close1);
@@ -114,60 +117,22 @@ function handlePlace() {
 }
 
 
-// function handleRemove() {
-//   if (focus1.shapes.length != 1) return;
-//   let shape = focus1.shapes[0];
-//   let pre = [];
-//   let post = [];
-//   let before = true;
-//   for (let pt of shape.pts) {
-//     if (pt == focus1) before = false;
-//     if (before) pre.push(pt);
-//     else post.push(pt);
-//   }
-//   let shapeTrail = [...post, ...pre];
+function handleRemove() {
+  let faceToRemove = close1.opp.face;
+  if (!faceToRemove) return;
+  let start = close1.opp.face.halfedge;
+  let ptr = start;
+  do {
+    if (ptr.opp.face == null) {
+      tree.remove(ptr.opp);
+      console.log("r", tree.nearest(cursor, 20).length);
+    } else {
+      ptr.face = null;
+      tree.insert(ptr);
+    }
+    ptr = ptr.next;
+  } while (ptr != start)
 
-//   let begin = null;
-//   let cutPath = [];
-//   for (let pt of shapeTrail) {
-//     let numShapes = pt.shapes.length;
-//     if (begin == null) {
-//       if (numShapes == 1) continue;
-//       else begin = pt;
-//     }
-//     cutPath.push(pt);
-//     if (numShapes == 1) break;
-//   }
-
-//   //TODO: merge this with last loop (hard to do readably)
-//   shapeTrail.forEach(pt => cutPath.includes(pt) ? null : tree.remove(pt));
-  
-//   if (begin == null) { // I hope this can only happen for the first shape
-//     console.warn("tried to remove only shape")
-//     return;
-//   }
-
-//   let pt1;
-//   let pt2 = cutPath.pop();
-//   while (cutPath.length > 0) {
-//     pt1 = pt2;
-//     pt2 = cutPath.pop();
-//     connect(pt1, pt2);
-//     console.log(pt1, pt1.blue)
-//     console.log(pt2, pt2.blue)
-//     pt1.alpha = pt2.prev.alpha;
-//     pt1.blue = pt2.prev.blue;
-//     pt1.theta = pt2.prev.theta;
-//   }
-
-
-// }
-
-window.addEventListener("keypress", e => {
-  if      (e.key == "q") theta -= 18;
-  else if (e.key == "e") theta += 18;
-  else if (e.key == "1") chosenShape = Shapes.KITE;
-  else if (e.key == "2") chosenShape = Shapes.DART;
-  theta = posMod(theta, 360);
-});
+  removeFromFloor(faceToRemove);
+}
 

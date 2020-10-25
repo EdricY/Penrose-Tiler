@@ -25,3 +25,8 @@ window.addEventListener("mousewheel", e => {
   chosenShape = 1 - chosenShape;
 });
 
+window.addEventListener("keypress", e => {
+  if (e.key == "1")      chosenShape = Shapes.KITE;
+  else if (e.key == "2") chosenShape = Shapes.DART;
+});
+
