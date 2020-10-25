@@ -39,12 +39,11 @@ export class Halfedge {
 }
 
 export class Point {
-  constructor(x, y, innerAngle) {
+  constructor(x, y) {
     if (x == null) x = 0;
     if (y == null) y = 0;
     this.vals = [x, y];
 
-    this.innerAngle = innerAngle; //may need posMod
     // this.halfedge = he;
   }
 

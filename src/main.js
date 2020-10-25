@@ -51,29 +51,12 @@ function tick() {
   drawCursor(visCtx);
 
   if (close1) {
-    Kite.drawPreview(visCtx, close1);
+    let shapeClass = chosenShape == Shapes.KITE ? Kite : Dart;
+    shapeClass.drawPreview(visCtx, close1);
   }
   visCtx.fillText(close1.x + " " + close1.y, 20, 20)
   visCtx.fillText(close1.alpha + " " + close1.blue, 20, 40)
   visCtx.fillText(close1.theta, 20, 60)
-  // visCtx.fillText("k: " + ghostShape.theta, 20, 80)
-
-  // draw focus circles
-  /*
-  drawCircle(focus1, "yellow");
-  drawCircle(focus1.next, "white");
-  drawCircle(focus1.prev, "black");
-  
-  if (temp1) drawCircle(temp1, "orange");
-
-
-  visCtx.fillText(cursor.x + " " + cursor.y, 20, 20)
-  visCtx.fillText(focus1.x + " " + focus1.y, 20, 40)
-  visCtx.fillText(focus1.innerAngle, 20, 60)
-
-
-  drawPath(visCtx)
-  */
 
   drawCircle(close1, "blue");
 
@@ -114,7 +97,8 @@ canvas.addEventListener("contextmenu", e => {
 
 function handlePlace() {
   let start = close1;
-  let newShape = new Kite(close1);
+  let shapeClass = chosenShape == Shapes.KITE ? Kite : Dart;
+  let newShape = new shapeClass(close1);
   let ptr = start;
   do {
     ptr = ptr.next;
