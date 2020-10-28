@@ -32,13 +32,7 @@ export class Kite {
     this.y = y;
     this.theta = theta;
 
-    this.verts = getVertices(this.theta, Shapes.KITE);
-    
-    // TODO: link with existing points? - I'm not sure if this is necessary
-    let bottom = new Point(x + this.verts[0], y + this.verts[1]);
-    let left   = new Point(x + this.verts[2], y + this.verts[3]);
-    let top    = new Point(x + this.verts[4], y + this.verts[5]);
-    let right  = new Point(x + this.verts[6], y + this.verts[7]);
+    let [bottom, left, top, right] = Kite.findPoints(x, y, theta)
 
     bottom.halfedge = new Halfedge(this, bottom,  left, ALPHA, BLUE, theta - 36);
     left.halfedge   = new Halfedge(this, left,     top,  BETA,  RED, theta + 72);
@@ -109,6 +103,25 @@ export class Kite {
     return [x, y, theta];
   }
 
+  static findPoints(x, y, theta) {
+    const verts = getVertices(theta, Shapes.KITE);
+    let bottom = new Point(x + verts[0], y + verts[1]);
+    let left   = new Point(x + verts[2], y + verts[3]);
+    let top    = new Point(x + verts[4], y + verts[5]);
+    let right  = new Point(x + verts[6], y + verts[7]);
+    return [bottom, left, top, right];
+  }
+
+  static getSegments(halfedge) {
+    let [x, y, theta] = Kite.orientationForFit(halfedge)
+    let [b, l, t, r] = Kite.findPoints(x, y, theta);
+    let seg1 = { pt1: b, pt2: l, theta: theta - 36 };
+    let seg2 = { pt1: l, pt2: t, theta: theta + 72 };
+    let seg3 = { pt1: t, pt2: r, theta: theta + 108 };
+    let seg4 = { pt1: r, pt2: b, theta: theta - 144 };
+    return [seg1, seg2, seg3, seg4];
+  }
+
   static drawPreview(ctx, halfedge, scale=1, stroke=false) {
     let [x, y, theta] = Kite.orientationForFit(halfedge);
     Kite.drawKite(ctx, x, y, theta, scale, stroke);
@@ -150,11 +163,7 @@ export class Dart {
     this.y = y;
     this.theta = theta;
 
-    this.verts = getVertices(this.theta, Shapes.DART);
-    let bottom = new Point(x + this.verts[0], y + this.verts[1]);
-    let left   = new Point(x + this.verts[2], y + this.verts[3]);
-    let top    = new Point(x + this.verts[4], y + this.verts[5]);
-    let right  = new Point(x + this.verts[6], y + this.verts[7]);
+    let [bottom, left, top, right] = Dart.findPoints(x, y, theta);
 
     bottom.halfedge = new Halfedge(this, bottom,  left,  BETA,  RED, theta - 108);
     left.halfedge   = new Halfedge(this, left,     top, ALPHA, BLUE, theta + 36);
@@ -198,7 +207,6 @@ export class Dart {
   static isRight(halfedge) { return halfedge.alpha && !halfedge.blue }
 
   static translationForFit(halfedge) {
-
     if (Dart.isBottom(halfedge)) return [SIN36 * 100, (COS36-1) * 100];
     if (Dart.isLeft(halfedge))   return [0, (PHI-1) * 100];
     if (Dart.isTop(halfedge))    return [-SIN36 * 100, (COS36-1) * 100];
@@ -224,6 +232,25 @@ export class Dart {
     let y = t[0] * s + t[1] * c + halfedge.nextPt.y;
 
     return [x, y, theta];
+  }
+
+  static findPoints(x, y, theta) {
+    const verts = getVertices(theta, Shapes.DART);
+    let bottom = new Point(x + verts[0], y + verts[1]);
+    let left   = new Point(x + verts[2], y + verts[3]);
+    let top    = new Point(x + verts[4], y + verts[5]);
+    let right  = new Point(x + verts[6], y + verts[7]);
+    return [bottom, left, top, right];
+  }
+
+  static getSegments(halfedge) {
+    let [x, y, theta] = Dart.orientationForFit(halfedge)
+    let [b, l, t, r] = Dart.findPoints(x, y, theta);
+    let seg1 = { pt1: b, pt2: l, theta: theta - 108};
+    let seg2 = { pt1: l, pt2: t, theta: theta + 36};
+    let seg3 = { pt1: t, pt2: r, theta: theta + 144};
+    let seg4 = { pt1: r, pt2: b, theta: theta - 72};
+    return [seg1, seg2, seg3, seg4];
   }
 
   static drawPreview(ctx, halfedge, scale=1, stroke=false) {
