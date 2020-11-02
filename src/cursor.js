@@ -16,14 +16,12 @@ export default function drawCursor(ctx) {
 }
 
 const canvasClientRatio = 1;
+
 canvas.addEventListener("mousemove", e => {
-  cursor.x = (e.offsetX + camera.x) / camera.scale;
-  cursor.y = (e.offsetY + camera.y) / camera.scale;
+  cursor.x = e.offsetX / camera.scale  + camera.x;
+  cursor.y = e.offsetY / camera.scale  + camera.y;
 });
 
-window.addEventListener("mousewheel", e => {
-  chosenShape = 1 - chosenShape;
-});
 
 window.addEventListener("keypress", e => {
   if (e.key == "1")      chosenShape = Shapes.KITE;

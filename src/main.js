@@ -55,10 +55,6 @@ function tick() {
       visCtx.globalAlpha = 1;
     }
     drawCircle(close1, "blue");
-
-    visCtx.fillText(close1.x + " " + close1.y, 20, 20)
-    visCtx.fillText(close1.alpha + " " + close1.blue, 20, 40)
-    visCtx.fillText(close1.theta, 20, 60)
   }
 
   if (temp1 && tempAlpha > 0) {
@@ -82,6 +78,8 @@ function tick() {
 
   visCtx.restore();
 
+  // visCtx.fillText(cursor.x, 20, 20)
+  // visCtx.fillText(cursor.y, 20, 40)
   requestAnimationFrame(tick);
 }
 
@@ -100,6 +98,11 @@ function update() {
 
   close1 = he;
   if (tree.empty()) tree.insert(new Halfedge(null, new Point(300, 400), new Point(300, 300), true, true, 0));
+
+  if (keys["w"]) camera.y -= 5 / camera.scale;
+  if (keys["s"]) camera.y += 5 / camera.scale;
+  if (keys["d"]) camera.x += 5 / camera.scale;
+  if (keys["a"]) camera.x -= 5 / camera.scale;
 }
 
 function closest() {
@@ -177,12 +180,22 @@ function handleRemove() {
   removeFromFloor(faceToRemove);
 }
 
+let keys = {};
 
 window.addEventListener("keydown", e => {
   if (e.key == "+" || e.key == "=") camera.scale += .1;
   if (e.key == "-" || e.key == "_") camera.scale -= .1;
-  if (e.key == "w") camera.y -= camera.scale * 10;
-  if (e.key == "s") camera.y += camera.scale * 10;
-  if (e.key == "d") camera.x += camera.scale * 10;
-  if (e.key == "a") camera.x -= camera.scale * 10;
-})
+
+  keys[e.key] = true;
+});
+
+window.addEventListener("mousewheel", e => {
+  if (e.deltaY > 0) camera.zoomAt(cursor.x, cursor.y, -.1)
+  else camera.zoomAt(cursor.x, cursor.y, .1)
+});
+
+
+window.addEventListener("keyup", e => {
+  keys[e.key] = false;
+});
+
