@@ -1,7 +1,7 @@
 import drawCursor, { chosenShape, cursor } from "./cursor.js";
 import { drawFloor, addToFloor, removeFromFloor, floorShapes } from "./floor.js";
 
-import { W, H, canvas, tree, dist, degrees2Radians, PI, posMod, Shapes, near, intersects } from "./globals";
+import { W, H, canvas, tree, dist, degrees2Radians, PI, posMod, Shapes, near, intersects, camera } from "./globals";
 import { Halfedge, Point } from "./halfedge.js";
 import { Dart, Kite } from "./shapes.js";
 
@@ -41,18 +41,20 @@ function drawCircle(pt, color) {
 
 function tick() {
   visCtx.clearRect(0, 0, W, H);
+  visCtx.save();
+  camera.moveCtx(visCtx);
   update();
   drawFloor(visCtx);
-  drawCursor(visCtx);
+  // drawCursor(visCtx);
 
   if (close1) {
-    drawCircle(close1, "blue");
     if (!invalid) {
       let shapeClass = chosenShape == Shapes.KITE ? Kite : Dart;
       visCtx.globalAlpha = .5;
       shapeClass.drawPreview(visCtx, close1);
       visCtx.globalAlpha = 1;
     }
+    drawCircle(close1, "blue");
 
     visCtx.fillText(close1.x + " " + close1.y, 20, 20)
     visCtx.fillText(close1.alpha + " " + close1.blue, 20, 40)
@@ -77,6 +79,8 @@ function tick() {
     visCtx.stroke()
     visCtx.restore();
   }
+
+  visCtx.restore();
 
   requestAnimationFrame(tick);
 }
@@ -173,3 +177,12 @@ function handleRemove() {
   removeFromFloor(faceToRemove);
 }
 
+
+window.addEventListener("keydown", e => {
+  if (e.key == "+" || e.key == "=") camera.scale += .1;
+  if (e.key == "-" || e.key == "_") camera.scale -= .1;
+  if (e.key == "w") camera.y -= camera.scale * 10;
+  if (e.key == "s") camera.y += camera.scale * 10;
+  if (e.key == "d") camera.x += camera.scale * 10;
+  if (e.key == "a") camera.x -= camera.scale * 10;
+})

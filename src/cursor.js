@@ -1,5 +1,5 @@
 import { Kite, Dart } from "./shapes.js";
-import { W, H, Shapes, tree, dist } from "./globals";
+import { W, H, Shapes, tree, camera } from "./globals";
 import { ghostShape, theta } from "./main";
 
 const cursorCtx = document.createElement("canvas").getContext("2d");
@@ -17,8 +17,8 @@ export default function drawCursor(ctx) {
 
 const canvasClientRatio = 1;
 canvas.addEventListener("mousemove", e => {
-  cursor.x = e.offsetX * canvasClientRatio;
-  cursor.y = e.offsetY * canvasClientRatio;
+  cursor.x = (e.offsetX + camera.x) / camera.scale;
+  cursor.y = (e.offsetY + camera.y) / camera.scale;
 });
 
 window.addEventListener("mousewheel", e => {

@@ -1,4 +1,5 @@
 import { kdTree } from "./kdTree";
+import Camera from "./camera.js";
 
 export const W = 600;
 export const H = 600;
@@ -12,6 +13,8 @@ export const TAU = PI * 2;
 export const Shapes = { KITE: 0, DART: 1 };
 
 export const canvas = document.getElementById("canvas");
+export const camera = new Camera();
+
 
 export function dist(a, b) {
   if (a == null || b == null) return Infinity;
