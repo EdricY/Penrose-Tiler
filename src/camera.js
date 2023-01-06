@@ -12,26 +12,24 @@ export default class Camera {
     ctx.translate(-Math.round(this.x), -Math.round(this.y));
   }
 
-  zoomAt(x, y, amt=.1) {
+  zoomAt(x, y, amt) {
+    const newScale = this.scale * (1+amt);
+
     if (this.scale + amt <= .2) return;
     let ow = W / this.scale;
     let oh = H / this.scale;
 
+    let nw = W / newScale;
+    let nh = H / newScale;
+
     let dx = x - this.x;
     let dy = y - this.y;
-
-    this.scale += amt;
     
-    let nw = W / this.scale;
-    let nh = H / this.scale;
+    let px = dx / ow;
+    let py = dy / oh;
 
-    let px = dx / nw;
-    let py = dy / nh;
-
-    let dw = ow - nw;
-    let dh = oh - nh;
-
-    this.x += dw * px
-    this.y += dh * py;
+    this.x = x - (nw * px);
+    this.y = y - (nh * py);
+    this.scale = newScale;
   }
 }

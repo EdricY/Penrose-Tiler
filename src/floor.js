@@ -6,6 +6,7 @@ import { W, H, Shapes, canvas } from "./globals";
 const tileCtx = document.createElement("canvas").getContext("2d");
 tileCtx.canvas.width = W;
 tileCtx.canvas.height = H;
+// TODO: can we use tileCtx without the image getting cut off?
 
 export const floorShapes = []; //TODO: use kd tree
 

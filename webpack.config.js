@@ -13,9 +13,11 @@ module.exports = [
       extensions: ['.js'],
     },
     devServer: {
-      contentBase: path.join(__dirname, '.'),
+      static: {
+        directory: path.join(__dirname, "./")
+      },
       compress: true,
-      port: 8000
+      port: 8000,
     },
   }
 ]
